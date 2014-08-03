@@ -6,11 +6,11 @@ To operate use the follow:
 
 $ python sqs.py
 
-#Enter your AWS Access key
+##Enter your AWS Access key
 
 AWS Access key: ******************
 
-#Enter your AWS Secret key
+##Enter your AWS Secret key
 
 AWS Secret key: ***********************************
 
