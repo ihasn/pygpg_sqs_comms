@@ -13,7 +13,7 @@ homedir_loc = raw_input('Type gpg home dir: ')
 gpg = gnupg.GPG(binary='/usr/bin/gpg2', homedir=homedir_loc)
 
 while True:
-    n = raw_input("Please enter option(send, recieve, search, quit): ")
+    n = raw_input("Please enter option(send, recieve, search, delete, quit): ")
     if n.strip() == 'quit':
         break
     if n.strip() == 'send':
@@ -41,7 +41,6 @@ while True:
           q.write(m)
         else:
           print "Decrypted Message: " + decrypted_message
-        
     if n.strip() == 'search':
         search = raw_input("Search for: ")
         response = urllib.urlopen("http://pgp.mit.edu:11371/pks/lookup?options=mr&op=get&search=" + search)
@@ -56,6 +55,10 @@ while True:
           print "Import: ", gpg.import_keys(pub_key).summary()
         else:
           print "Returning"
-
-
-#conn.delete_queue(q)
+    if n.strip() == 'delete':
+        key_id_queue = raw_input("GPG Key ID: ")
+        sure = raw_input("Are you sure you want to delete the queue: (yes or no)")
+        if sure == 'yes':
+          conn.delete_queue(key_id_queue)
+        else:
+          print "Returning"
