@@ -1,10 +1,14 @@
 import boto.sqs, gnupg, getpass, time, urllib
 
 from boto.sqs.message import Message
-aws_access_key_id = raw_input("AWS Access key: ")
-aws_secret_access_key = raw_input("AWS Secret key: ")
-conn = boto.sqs.connect_to_region("us-east-1", aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
+use_local_boto = raw_input("Use local AWS keys? (yes or no)")
+if use_local_boto == 'no':
+  aws_access_key_id = raw_input("AWS Access key: ")
+  aws_secret_access_key = raw_input("AWS Secret key: ")
+  conn = boto.sqs.connect_to_region("us-east-1", aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+else:
+  conn = boto.sqs.connect_to_region("us-east-1")
 homedir_loc = raw_input('Type gpg home dir: ')
 gpg = gnupg.GPG(binary='/usr/bin/gpg2', homedir=homedir_loc)
 
@@ -32,7 +36,12 @@ while True:
         pulled_encrypt_message = m.get_body()
         print "Pulled Encrypted Message: " + pulled_encrypt_message
         decrypted_message = str(gpg.decrypt(str(pulled_encrypt_message), passphrase=password))
-        print "Decrypted Message: " + decrypted_message
+        if decrypted_message == '':
+          print "Posting back to SQS, incorrect key or password"
+          q.write(m)
+        else:
+          print "Decrypted Message: " + decrypted_message
+        
     if n.strip() == 'search':
         search = raw_input("Search for: ")
         response = urllib.urlopen("http://pgp.mit.edu:11371/pks/lookup?options=mr&op=get&search=" + search)
