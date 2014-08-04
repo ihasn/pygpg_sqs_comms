@@ -1,5 +1,5 @@
-import boto.sqs, gnupg, getpass
-import time
+import boto.sqs, gnupg, getpass, time, urllib
+
 from boto.sqs.message import Message
 aws_access_key_id = raw_input("AWS Access key: ")
 aws_secret_access_key = raw_input("AWS Secret key: ")
@@ -9,7 +9,7 @@ homedir_loc = raw_input('Type gpg home dir: ')
 gpg = gnupg.GPG(binary='/usr/bin/gpg2', homedir=homedir_loc)
 
 while True:
-    n = raw_input("Please enter option(send, recieve, quit): ")
+    n = raw_input("Please enter option(send, recieve, search, quit): ")
     if n.strip() == 'quit':
         break
     if n.strip() == 'send':
@@ -33,6 +33,20 @@ while True:
         print "Pulled Encrypted Message: " + pulled_encrypt_message
         decrypted_message = str(gpg.decrypt(str(pulled_encrypt_message), passphrase=password))
         print "Decrypted Message: " + decrypted_message
+    if n.strip() == 'search':
+        search = raw_input("Search for: ")
+        response = urllib.urlopen("http://pgp.mit.edu:11371/pks/lookup?options=mr&op=get&search=" + search)
+        pub_key = response.read()
+        from pgpdump import AsciiData
+        test = AsciiData(pub_key)
+        test.strip_magic(pub_key)
+        packets = list(test.packets())
+        print packets[1]
+        add_response = raw_input("Add this Pubkey? (yes or no) ")
+        if add_response == 'yes':
+          print "Import: ", gpg.import_keys(pub_key).summary()
+        else:
+          print "Returning"
 
 
 #conn.delete_queue(q)
